@@ -82,6 +82,12 @@ const menus: Menu[] = [
   },
 ];
 
+/**
+ * Navbar menu switch. While false, menu items are shown but have no
+ * dropdowns and aren't clickable. Set to true to re-enable navigation.
+ */
+const NAV_ENABLED = false;
+
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -96,52 +102,59 @@ export default function Header() {
     <header className="navbar">
         <div className="navbar__inner">
           <Logo />
+          {NAV_ENABLED ? (
           <nav className={`nav${open ? " is-open" : ""}`} aria-label="Main">
-            {menus.map((m) => (
-              <div key={m.label} className={`nav__item${expanded === m.label ? " is-expanded" : ""}`}>
-                <button
-                  className="nav__link"
-                  aria-expanded={expanded === m.label}
-                  onClick={() => setExpanded(expanded === m.label ? null : m.label)}
-                >
-                  {m.label} <Chevron />
-                </button>
-                <div className={`mega ${m.cols.length + (m.feature ? 1 : 0) >= 3 ? "mega--3" : "mega--2"}`}>
-                  {m.cols.map((c) => (
-                    <div key={c.title}>
-                      <div className="mega__title">{c.title}</div>
-                      {c.links.map((l) => (
-                        <Link key={l.title} className="mega__link" href={l.href}>
-                          <strong>
-                            {l.title}
-                            {l.badge && <span className="badge-new">{l.badge}</span>}
-                          </strong>
-                          {l.desc && <span>{l.desc}</span>}
+              {menus.map((m) => (
+                <div key={m.label} className={`nav__item${expanded === m.label ? " is-expanded" : ""}`}>
+                  <button
+                    className="nav__link"
+                    aria-expanded={expanded === m.label}
+                    onClick={() => setExpanded(expanded === m.label ? null : m.label)}
+                  >
+                    {m.label} <Chevron />
+                  </button>
+                  <div className={`mega ${m.cols.length + (m.feature ? 1 : 0) >= 3 ? "mega--3" : "mega--2"}`}>
+                    {m.cols.map((c) => (
+                      <div key={c.title}>
+                        <div className="mega__title">{c.title}</div>
+                        {c.links.map((l) => (
+                          <Link key={l.title} className="mega__link" href={l.href}>
+                            <strong>
+                              {l.title}
+                              {l.badge && <span className="badge-new">{l.badge}</span>}
+                            </strong>
+                            {l.desc && <span>{l.desc}</span>}
+                          </Link>
+                        ))}
+                      </div>
+                    ))}
+                    {m.feature && (
+                      <div className="mega__feature">
+                        <span className="eyebrow" style={{ margin: 0 }}>{m.feature.eyebrow}</span>
+                        <h5>{m.feature.text}</h5>
+                        <Link className="link-arrow" href={m.feature.href}>
+                          {m.feature.cta} <ArrowRight />
                         </Link>
-                      ))}
-                    </div>
-                  ))}
-                  {m.feature && (
-                    <div className="mega__feature">
-                      <span className="eyebrow" style={{ margin: 0 }}>{m.feature.eyebrow}</span>
-                      <h5>{m.feature.text}</h5>
-                      <Link className="link-arrow" href={m.feature.href}>
-                        {m.feature.cta} <ArrowRight />
-                      </Link>
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
                 </div>
+              ))}
+              <div className="nav__item">
+                <Link className="nav__link" href="/#case-studies">Case Studies</Link>
               </div>
-            ))}
-            <div className="nav__item">
-              <Link className="nav__link" href="/#case-studies">Case Studies</Link>
-            </div>
-            <div className="nav__item">
-              <Link className="nav__link nav__link--strong" href="/contact">Contact</Link>
-            </div>
-          </nav>
+            </nav>
+          ) : (
+            <nav className={`nav nav--disabled${open ? " is-open" : ""}`} aria-label="Main">
+              {[...menus.map((m) => m.label), "Case Studies"].map((label) => (
+                <div key={label} className="nav__item">
+                  <span className="nav__link" aria-disabled="true">{label}</span>
+                </div>
+              ))}
+            </nav>
+          )}
           <div className="nav__cta">
-            <Link href="/contact" className="btn btn--dashed">Free health check</Link>
+            <Link href="/contact" className="btn btn--dashed nav__contact">Contact</Link>
             <Link href="/contact" className="btn btn--dark">Talk to an expert</Link>
             <button className="burger" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen(!open)}>
               <span></span><span></span><span></span>

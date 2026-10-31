@@ -125,6 +125,7 @@ h4 { font-size: 1.25rem; letter-spacing: -.02em; }
 .nav__link--strong { color: var(--ink); }
 .nav__cta { display: flex; gap: .6rem; align-items: center; margin-left: auto; }
 .nav__cta .btn { padding: .6rem .9rem; font-size: .95rem; gap: 0; }
+.nav__contact { margin-right: 0; }
 
 .mega {
   position: absolute; top: calc(100% + .9rem); left: -1rem; background: #FFFFFF; border: 1px solid var(--border);
@@ -407,7 +408,7 @@ h4 { font-size: 1.25rem; letter-spacing: -.02em; }
 /* ---------- Responsive ---------- */
 @media (max-width: 991px) {
   :root { --gutter: 1.5rem; --frame: calc(100% - 2rem); }
-  .nav, .nav__cta .btn--dashed { display: none; }
+  .nav { display: none; }
   .burger { display: block; }
   .nav.is-open { display: flex; flex-direction: column; align-items: stretch; position: absolute; top: 100%; left: 0; right: 0; background: #FFFFFF; border-bottom: 1px solid var(--border); padding: .5rem 1.4rem 1.5rem; max-height: calc(100vh - 4.3rem); overflow: auto; }
   .nav.is-open .nav__link { width: 100%; justify-content: space-between; padding: .9rem 0; border-bottom: 1px solid var(--border); color: var(--ink); }
@@ -609,3 +610,7 @@ h4 { font-size: 1.25rem; letter-spacing: -.02em; }
   .sp-card:nth-of-type(n+5), .sp-err:nth-of-type(n+4) { display: none; }
 }
 .scene-hero .rain-cells rect { animation-duration: 8s; }
+
+/* Navbar menu disabled (see NAV_ENABLED in components/Header.tsx) */
+.nav--disabled .nav__link { cursor: default; }
+.nav--disabled .nav__link:hover { color: var(--muted); }
