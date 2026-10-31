@@ -1,0 +1,78 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+
+/**
+ * Wires up the page interactions with document-level event delegation, so pages
+ * can stay server components:
+ *  - [data-tabs]   .tabs__btn  -> .tabs__panel
+ *  - .acc__q       accordion
+ *  - [data-prev] / [data-next] slider buttons inside a section with [data-slider]
+ *  - .reveal       fade-up on scroll
+ */
+export default function SiteEffects() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+
+      const tab = t.closest<HTMLElement>(".tabs__btn");
+      if (tab) {
+        const root = tab.closest("[data-tabs]");
+        if (!root) return;
+        const btns = Array.from(root.querySelectorAll(".tabs__btn"));
+        const panels = Array.from(root.querySelectorAll(".tabs__panel"));
+        const i = btns.indexOf(tab);
+        btns.forEach((b, j) => {
+          b.classList.toggle("is-active", j === i);
+          b.setAttribute("aria-selected", String(j === i));
+        });
+        panels.forEach((p, j) => p.classList.toggle("is-active", j === i));
+        return;
+      }
+
+      const q = t.closest<HTMLElement>(".acc__q");
+      if (q) {
+        const item = q.parentElement!;
+        item.classList.toggle("is-open");
+        q.setAttribute("aria-expanded", String(item.classList.contains("is-open")));
+        return;
+      }
+
+      const nav = t.closest<HTMLElement>("[data-prev], [data-next]");
+      if (nav) {
+        const track = nav.closest("section")?.querySelector<HTMLElement>("[data-slider] .slider__track");
+        const card = track?.firstElementChild as HTMLElement | null;
+        if (!track || !card) return;
+        const step = card.getBoundingClientRect().width + 20;
+        track.scrollBy({ left: nav.hasAttribute("data-prev") ? -step : step, behavior: "smooth" });
+      }
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            io.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll(".reveal:not(.is-in)").forEach((el) => io.observe(el));
+
+    // Open a tab directly from the URL hash, e.g. /solutions#azure-db
+    const hash = window.location.hash.slice(1);
+    if (hash) document.querySelector<HTMLElement>(`[data-tab-id="${CSS.escape(hash)}"]`)?.click();
+
+    return () => io.disconnect();
+  }, [pathname]);
+
+  return null;
+}

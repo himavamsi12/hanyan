@@ -1,0 +1,7 @@
+node_modules
+.vercel
+.env*
+.next
+next-env.d.ts
+*.tsbuildinfo
+_static
