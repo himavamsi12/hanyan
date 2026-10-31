@@ -63,15 +63,41 @@ export default function SiteEffects() {
             io.unobserve(e.target);
           }
         }),
-      { threshold: 0.12 }
+      { threshold: 0, rootMargin: "0px 0px -8% 0px" }
     );
-    document.querySelectorAll(".reveal:not(.is-in)").forEach((el) => io.observe(el));
+    const watch = (root: ParentNode) =>
+      root.querySelectorAll<HTMLElement>(".reveal:not(.is-in)").forEach((el) => io.observe(el));
+    watch(document);
+
+    // Also catch .reveal elements added or re-rendered after load
+    const mo = new MutationObserver((muts) => {
+      for (const m of muts) {
+        m.addedNodes.forEach((n) => {
+          if (!(n instanceof HTMLElement)) return;
+          if (n.matches(".reveal:not(.is-in)")) io.observe(n);
+          watch(n);
+        });
+        if (m.type === "attributes" && m.target instanceof HTMLElement && m.target.matches(".reveal:not(.is-in)")) io.observe(m.target);
+      }
+    });
+    mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+
+    // Safety net: never leave content hidden if the observer misses something
+    const fallback = setTimeout(() => {
+      document.querySelectorAll<HTMLElement>(".reveal:not(.is-in)").forEach((el) => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add("is-in");
+      });
+    }, 1500);
 
     // Open a tab directly from the URL hash, e.g. /solutions#azure-db
     const hash = window.location.hash.slice(1);
     if (hash) document.querySelector<HTMLElement>(`[data-tab-id="${CSS.escape(hash)}"]`)?.click();
 
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      mo.disconnect();
+      clearTimeout(fallback);
+    };
   }, [pathname]);
 
   return null;
